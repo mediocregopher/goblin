@@ -33,6 +33,8 @@ func (redisStore *RedisStore) PutGob(gob *storage.Gob) error {
 	if err := gobEnc.Encode(gob); err != nil {
 		return err
 	}
+	// You should probably have a gobKey function which takes in a uid and
+	// returns the key for the gob. Same with hordeKey.
 	reply := redisStore.Client.Cmd("SET", "gob:"+gob.UID, buf.Bytes())
 	return reply.Err
 }
@@ -60,6 +62,7 @@ func (redisStore *RedisStore) GetGob(uid string) (*storage.Gob, error) {
 
 func (redisStore *RedisStore) DelGob(uid string) error {
 	//der TODO: do I need to check?
+	// Nope
 	if exist, _ := redisStore.UIDExist(uid); !exist {
 		return errors.New("uid does not exist")
 	}
@@ -72,23 +75,26 @@ func (redisStore *RedisStore) GetHorde(hordeName string) (storage.Horde, error) 
 	if reply.Err != nil {
 		return nil, reply.Err
 	}
+	// ZRANGE always returns a list, so I don't think this is necessary
 	if reply.Type == redis.NilReply {
 		return storage.Horde{}, nil
 	}
+	// I WROTE THIS METHOD WOO!!!!!!
 	h, err := reply.ListBytes()
 	if err != nil {
 		return nil, err
 	}
 	// TODO: Pre-allocate?
-	horde := storage.Horde{}
-	for _, bs := range h {
+	// Might as well
+	horde := make(storage.Horde, len(h))
+	for i, bs := range h {
 		uidCreated := &storage.UIDCreated{}
 		buf := bytes.NewReader(bs)
 		gobDec := realgob.NewDecoder(buf)
 		if err = gobDec.Decode(uidCreated); err != nil {
 			return nil, err
 		}
-		horde = append(horde, uidCreated)
+		horde[i] = uidCreated
 	}
 	return horde, nil
 }
@@ -97,6 +103,9 @@ func (redisStore *RedisStore) AddUIDHorde(hordeName string, uid string) error {
 	now := time.Now()
 	uidCreated := storage.UIDCreated{UID: uid, Created: now.String()}
 	buf := new(bytes.Buffer)
+	// You might save some lines of code by having encode/decode functions
+	// defined in this package. It would also make it easier to change encoding
+	// schemes
 	gobEnc := realgob.NewEncoder(buf)
 	if err := gobEnc.Encode(uidCreated); err != nil {
 		return err

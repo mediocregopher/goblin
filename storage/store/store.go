@@ -61,6 +61,8 @@ func PutGob(uid string, data []byte, ip string) error {
 }
 
 // Should I return a Horde or just a map?
+// I think returning the Horde itself is fine. Also, if you return a map you
+// lose any sorting you apparently want to do.
 // TODO: Have dataStore store the and return the hordes in a sorted list
 func GetHorde(hordeName string) (storage.Horde, error) {
 	horde, err := dataStore.GetHorde(hordeName)

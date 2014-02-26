@@ -48,6 +48,7 @@ func (memoryStore *MemoryStore) DelGob(uid string) error {
 	memoryStore.lock.Lock()
 	defer memoryStore.lock.Unlock()
 	// TODO: do I need to check?
+	// Unless you really want to return the error you don't have to check
 	if exist, _ := memoryStore.UIDExist(uid); !exist {
 		return errors.New("uid does not exist")
 	}

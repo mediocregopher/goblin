@@ -20,7 +20,7 @@ var (
 
 func getGobData(w http.ResponseWriter, r *http.Request) []byte {
 	//parse the multipart form in the request
-	err := r.ParseMultipartForm(11534336)
+	err := r.ParseMultipartForm(11534336) // Random ass number?
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
@@ -68,6 +68,7 @@ func getIpAddress(r *http.Request) string {
 	if hdrRealIp == "" && hdrForwardedFor == "" {
 		return ipAddrFromRemoteAddr(r.RemoteAddr)
 	}
+	// Why comment this out?
 	//if hdrForwardedFor != "" {
 	//        // X-Forwarded-For is potentially a list of addresses separated with ","
 	//        parts := strings.Split(hdrForwardedFor, ",")
@@ -84,12 +85,11 @@ func getPageType(r *http.Request) string {
 	userAgent := r.Header.Get("User-Agent")
 	params := r.URL.Query()
 	_, cli := params["cli"]
-	pageType := "HTML"
 	// If cli param present or Mozilla not found in the user agent, use plain text
 	if cli || !browserUserAgentReg.MatchString(userAgent) {
-		pageType = "TEXT"
+		return "TEXT"
 	}
-	return pageType
+	return "HTML"
 }
 
 func getLanguage(r *http.Request) string {
@@ -106,51 +106,31 @@ func getLanguage(r *http.Request) string {
 	// Deal with aliases
 	switch lang {
 	case "markup":
-		break
 	case "css":
-	    break
 	case "css.selector":
-	    break
 	case "clike":
-	    break
 	case "javascript", "js":
 		lang = "javascript"
-	    break
 	case "java":
-	    break
 	case "php":
-	    break
 	case "coffeescript", "coffee":
 		lang = "coffeescript"
-	    break
 	case "scss":
-	    break
 	case "bash", "sh":
 		lang = "bash"
-	    break
 	case "c":
-	    break
 	case "cpp":
-	    break
 	case "python", "py":
 		lang = "python"
-	    break
 	case "sql":
-	    break
 	case "groovy", "gvy", "gy", "gsh":
 		lang = "groovy"
-	    break
 	case "http":
-	    break
 	case "ruby", "rb":
 		lang = "ruby"
-	    break
 	case "gherkin":
-	    break
 	case "csharp":
-	    break
 	case "go":
-	    break
 	default:
 		lang = ""
 	}
@@ -177,6 +157,8 @@ func GetGob(w http.ResponseWriter, r *http.Request) {
 	uid := params.Get(":uid")
 	if err := validateUID(w, uid); err != nil {
 		gslog.Debug(err.Error())
+		// I think validateUID does this already. I would leave this logic here
+		// and just have validateUID only take in uid and return an error
 		http.Error(w, err.Error(), http.StatusNotFound)
 		return
 	}
@@ -250,6 +232,9 @@ func PostHordeGob(w http.ResponseWriter, r *http.Request) {
 	gslog.Debug("PostHordeGob called")
 	params := r.URL.Query()
 	hordeName := params.Get(":horde")
+	// Same thing as validateUID. I would have validateHordeName only take in
+	// the name and return an error. Also, as of right now, if there was an
+	// error how would execution stop?
 	validateHordeName(w, hordeName)
 	gobData := getGobData(w, r)
 	uid := store.GetNewUID()

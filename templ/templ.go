@@ -32,6 +32,9 @@ var (
 	domain        string
 )
 
+// Instead of contentType being a string I would have it be a const in this
+// package. Makes it more clear why it's being used when you need use them in
+// other packages
 func executeTemplate(contentType string, templateName string, data interface{}) ([]byte, error) {
 	var err error
 	buf := &bytes.Buffer{}

@@ -19,4 +19,5 @@ type UIDCreated struct {
 }
 
 // A slice of Pairs that implements sort.Interface to sort by Value.
+// I don't think you're ever implementing it.... that I can find anyway
 type Horde []*UIDCreated
